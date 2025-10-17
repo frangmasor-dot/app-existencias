@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Existencias</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-guardar {
+            background-color: #28a745;
+        }
+
+        .btn-limpiar {
+            background-color: #dc3545;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 2px solid #333;
+            font-family: 'Arial Black', Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        th {
+            font-weight: bold;
+            color: white;
+        }
+
+        .header-main {
+            background-color: #000;
+            font-size: 24px;
+        }
+
+        .header-pc {
+            background-color: #0000ff;
+        }
+
+        .header-telefono {
+            background-color: #ff8c00;
+        }
+
+        .header-diferencia {
+            background-color: #28a745;
+        }
+
+        .header-operadora {
+            background-color: #800080;
+        }
+
+        .operadora {
+            background-color: #fff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            text-align: right;
+            font-family: 'Arial Black', Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        .calculated {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .historial {
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .historial h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .historial-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+
+        .historial-item small {
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .historial-actions {
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            th, td {
+                font-size: 9px;
+                padding: 5px;
+            }
+            
+            input[type="text"] {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>EXISTENCIA</h1>
+        <div class="buttons">
+            <button class="btn btn-guardar" onclick="guardarDatos()">Guardar</button>
+            <button class="btn btn-limpiar" onclick="limpiarDatos()">Limpiar</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="3" class="header-operadora">Operadora</th>
+                    <th colspan="2" class="header-pc">PC</th>
+                    <th colspan="2" class="header-telefono">Telefono</th>
+                    <th colspan="2" class="header-diferencia">Diferencia</th>
+                </tr>
+                <tr>
+                    <th class="header-pc">Recs</th>
+                    <th class="header-pc">Dolares</th>
+                    <th class="header-telefono">Unidades<br>Recs</th>
+                    <th class="header-telefono">Dolares</th>
+                    <th class="header-diferencia">En<br>Dolares</th>
+                    <th class="header-diferencia">Mensaje</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="operadora">Tigo</td>
+                    <td><input type="text" id="tigo_recs" oninput="calcular('tigo')"></td>
+                    <td class="calculated" id="tigo_pc_dolares">$ 0.00</td>
+                    <td class="calculated" id="tigo_tel_unidades">0.00</td>
+                    <td><input type="text" id="tigo_tel_dolares" oninput="calcular('tigo')"></td>
+                    <td class="calculated" id="tigo_diferencia">$ 0.00</td>
+                    <td class="calculated" id="tigo_mensaje"></td>
+                </tr>
+                <tr>
+                    <td class="operadora">Claro</td>
+                    <td><input type="text" id="claro_recs" oninput="calcular('claro')"></td>
+                    <td class="calculated" id="claro_pc_dolares">$ 0.00</td>
+                    <td class="calculated" id="claro_tel_unidades">0.00</td>
+                    <td><input type="text" id="claro_tel_dolares" oninput="calcular('claro')"></td>
+                    <td class="calculated" id="claro_diferencia">$ 0.00</td>
+                    <td class="calculated" id="claro_mensaje"></td>
+                </tr>
+                <tr>
+                    <td class="operadora">Movistar</td>
+                    <td><input type="text" id="movistar_recs" oninput="calcular('movistar')"></td>
+                    <td class="calculated" id="movistar_pc_dolares">$ 0.00</td>
+                    <td class="calculated" id="movistar_tel_unidades">0.00</td>
+                    <td><input type="text" id="movistar_tel_dolares" oninput="calcular('movistar')"></td>
+                    <td class="calculated" id="movistar_diferencia">$ 0.00</td>
+                    <td class="calculated" id="movistar_mensaje"></td>
+                </tr>
+                <tr>
+                    <td class="operadora">Digicel</td>
+                    <td><input type="text" id="digicel_recs" oninput="calcular('digicel')"></td>
+                    <td class="calculated" id="digicel_pc_dolares">$ 0.00</td>
+                    <td class="calculated" id="digicel_tel_unidades">0.00</td>
+                    <td><input type="text" id="digicel_tel_dolares" oninput="calcular('digicel')"></td>
+                    <td class="calculated" id="digicel_diferencia">$ 0.00</td>
+                    <td class="calculated" id="digicel_mensaje"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="historial">
+        <h2>📋 Historial de Registros</h2>
+        <div id="historial-lista"></div>
+    </div>
+
+    <script>
+        const tasas = {
+            tigo: 0.0475,
+            claro: 0.0470,
+            movistar: 0.0476,
+            digicel: 0.0470
+        };
+
+        let historial = [];
+
+        // Cargar datos guardados al iniciar
+        window.onload = function() {
+            cargarDatosGuardados();
+            cargarHistorial();
+        };
+
+        function calcular(operadora) {
+            const recs = parseFloat(document.getElementById(`${operadora}_recs`).value) || 0;
+            const telDolares = parseDollar(document.getElementById(`${operadora}_tel_dolares`).value) || 0;
+            
+            const pcDolares = recs * tasas[operadora];
+            const telUnidades = telDolares / tasas[operadora];
+            const diferencia = pcDolares - telDolares;
+            const absDiferencia = Math.abs(diferencia);
+
+            document.getElementById(`${operadora}_pc_dolares`).textContent = formatDollar(pcDolares);
+            document.getElementById(`${operadora}_tel_unidades`).textContent = formatNumber(telUnidades);
+            
+            if (absDiferencia < 0.1 && absDiferencia > 0) {
+                document.getElementById(`${operadora}_diferencia`).textContent = '';
+                document.getElementById(`${operadora}_mensaje`).textContent = '';
+            } else {
+                document.getElementById(`${operadora}_diferencia`).textContent = formatDollar(diferencia);
+                if (diferencia > 0) {
+                    document.getElementById(`${operadora}_mensaje`).textContent = 'Mas en Pc';
+                } else if (diferencia < 0) {
+                    document.getElementById(`${operadora}_mensaje`).textContent = 'Mas enTel';
+                } else {
+                    document.getElementById(`${operadora}_mensaje`).textContent = '';
+                }
+            }
+        }
+
+        function formatNumber(num) {
+            return num.toFixed(2);
+        }
+
+        function formatDollar(num) {
+            return '$ ' + num.toFixed(2);
+        }
+
+        function parseDollar(str) {
+            return parseFloat(str.replace(/[$,\s]/g, '')) || 0;
+        }
+
+        function guardarDatos() {
+            const datos = {
+                fecha: new Date().toLocaleString('es-ES'),
+                tigo: {
+                    recs: document.getElementById('tigo_recs').value,
+                    tel_dolares: document.getElementById('tigo_tel_dolares').value
+                },
+                claro: {
+                    recs: document.getElementById('claro_recs').value,
+                    tel_dolares: document.getElementById('claro_tel_dolares').value
+                },
+                movistar: {
+                    recs: document.getElementById('movistar_recs').value,
+                    tel_dolares: document.getElementById('movistar_tel_dolares').value
+                },
+                digicel: {
+                    recs: document.getElementById('digicel_recs').value,
+                    tel_dolares: document.getElementById('digicel_tel_dolares').value
+                }
+            };
+
+            // Guardar datos actuales
+            const datosGuardados = JSON.stringify(datos);
+            const datosArray = [];
+            datosArray.push(datosGuardados);
+            window.datosActuales = datosGuardados;
+
+            // Agregar al historial
+            historial.unshift(datos);
+            if (historial.length > 20) {
+                historial = historial.slice(0, 20);
+            }
+            window.historialGlobal = JSON.stringify(historial);
+
+            mostrarHistorial();
+            alert('✅ Datos guardados correctamente');
+        }
+
+        function limpiarDatos() {
+            if (confirm('¿Está seguro que desea limpiar todos los campos?')) {
+                const operadoras = ['tigo', 'claro', 'movistar', 'digicel'];
+                operadoras.forEach(op => {
+                    document.getElementById(`${op}_recs`).value = '';
+                    document.getElementById(`${op}_tel_dolares`).value = '';
+                    calcular(op);
+                });
+            }
+        }
+
+        function cargarDatosGuardados() {
+            if (window.datosActuales) {
+                const datos = JSON.parse(window.datosActuales);
+                cargarDatosEnFormulario(datos);
+            }
+        }
+
+        function cargarHistorial() {
+            if (window.historialGlobal) {
+                historial = JSON.parse(window.historialGlobal);
+                mostrarHistorial();
+            }
+        }
+
+        function cargarDatosEnFormulario(datos) {
+            ['tigo', 'claro', 'movistar', 'digicel'].forEach(op => {
+                if (datos[op]) {
+                    document.getElementById(`${op}_recs`).value = datos[op].recs || '';
+                    document.getElementById(`${op}_tel_dolares`).value = datos[op].tel_dolares || '';
+                    calcular(op);
+                }
+            });
+        }
+
+        function mostrarHistorial() {
+            const lista = document.getElementById('historial-lista');
+            if (historial.length === 0) {
+                lista.innerHTML = '<p style="color: #999;">No hay registros guardados</p>';
+                return;
+            }
+
+            lista.innerHTML = historial.map((item, index) => `
+                <div class="historial-item">
+                    <small>📅 ${item.fecha}</small>
+                    <div style="font-size: 10px; margin-top: 5px;">
+                        <strong>Tigo:</strong> ${item.tigo.recs} recs, ${item.tigo.tel_dolares} | 
+                        <strong>Claro:</strong> ${item.claro.recs} recs, ${item.claro.tel_dolares} | 
+                        <strong>Movistar:</strong> ${item.movistar.recs} recs, ${item.movistar.tel_dolares} | 
+                        <strong>Digicel:</strong> ${item.digicel.recs} recs, ${item.digicel.tel_dolares}
+                    </div>
+                    <div class="historial-actions">
+                        <button class="btn btn-small" style="background-color: #007bff; color: white;" onclick="cargarRegistro(${index})">Cargar</button>
+                        <button class="btn btn-small" style="background-color: #dc3545; color: white;" onclick="eliminarRegistro(${index})">Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cargarRegistro(index) {
+            const datos = historial[index];
+            cargarDatosEnFormulario(datos);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function eliminarRegistro(index) {
+            if (confirm('¿Está seguro que desea eliminar este registro?')) {
+                historial.splice(index, 1);
+                window.historialGlobal = JSON.stringify(historial);
+                mostrarHistorial();
+            }
+        }
+    </script>
+</body>
