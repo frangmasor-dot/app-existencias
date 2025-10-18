@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -180,7 +179,7 @@
     <div class="header">
         <h1>EXISTENCIA</h1>
         <div class="buttons">
-            <button class="btn btn-guardar" onclick="guardarDatos()">Guardar</button>
+            <button class="btn btn-guardar" onclick="guardarEnHistorial()">Guardar</button>
             <button class="btn btn-limpiar" onclick="limpiarDatos()">Limpiar</button>
         </div>
     </div>
@@ -206,37 +205,37 @@
             <tbody>
                 <tr>
                     <td class="operadora">Tigo</td>
-                    <td><input type="text" id="tigo_recs" oninput="calcular('tigo')"></td>
+                    <td><input type="text" id="tigo_recs" oninput="calcularYGuardar('tigo')"></td>
                     <td class="calculated" id="tigo_pc_dolares">$ 0.00</td>
                     <td class="calculated" id="tigo_tel_unidades">0.00</td>
-                    <td><input type="text" id="tigo_tel_dolares" oninput="calcular('tigo')"></td>
+                    <td><input type="text" id="tigo_tel_dolares" oninput="calcularYGuardar('tigo')"></td>
                     <td class="calculated" id="tigo_diferencia">$ 0.00</td>
                     <td class="calculated" id="tigo_mensaje"></td>
                 </tr>
                 <tr>
                     <td class="operadora">Claro</td>
-                    <td><input type="text" id="claro_recs" oninput="calcular('claro')"></td>
+                    <td><input type="text" id="claro_recs" oninput="calcularYGuardar('claro')"></td>
                     <td class="calculated" id="claro_pc_dolares">$ 0.00</td>
                     <td class="calculated" id="claro_tel_unidades">0.00</td>
-                    <td><input type="text" id="claro_tel_dolares" oninput="calcular('claro')"></td>
+                    <td><input type="text" id="claro_tel_dolares" oninput="calcularYGuardar('claro')"></td>
                     <td class="calculated" id="claro_diferencia">$ 0.00</td>
                     <td class="calculated" id="claro_mensaje"></td>
                 </tr>
                 <tr>
                     <td class="operadora">Movistar</td>
-                    <td><input type="text" id="movistar_recs" oninput="calcular('movistar')"></td>
+                    <td><input type="text" id="movistar_recs" oninput="calcularYGuardar('movistar')"></td>
                     <td class="calculated" id="movistar_pc_dolares">$ 0.00</td>
                     <td class="calculated" id="movistar_tel_unidades">0.00</td>
-                    <td><input type="text" id="movistar_tel_dolares" oninput="calcular('movistar')"></td>
+                    <td><input type="text" id="movistar_tel_dolares" oninput="calcularYGuardar('movistar')"></td>
                     <td class="calculated" id="movistar_diferencia">$ 0.00</td>
                     <td class="calculated" id="movistar_mensaje"></td>
                 </tr>
                 <tr>
                     <td class="operadora">Digicel</td>
-                    <td><input type="text" id="digicel_recs" oninput="calcular('digicel')"></td>
+                    <td><input type="text" id="digicel_recs" oninput="calcularYGuardar('digicel')"></td>
                     <td class="calculated" id="digicel_pc_dolares">$ 0.00</td>
                     <td class="calculated" id="digicel_tel_unidades">0.00</td>
-                    <td><input type="text" id="digicel_tel_dolares" oninput="calcular('digicel')"></td>
+                    <td><input type="text" id="digicel_tel_dolares" oninput="calcularYGuardar('digicel')"></td>
                     <td class="calculated" id="digicel_diferencia">$ 0.00</td>
                     <td class="calculated" id="digicel_mensaje"></td>
                 </tr>
@@ -258,12 +257,18 @@
         };
 
         let historial = [];
+        let datosActualesMemoria = {};
 
         // Cargar datos guardados al iniciar
         window.onload = function() {
-            cargarDatosGuardados();
+            cargarDatosActuales();
             cargarHistorial();
         };
+
+        function calcularYGuardar(operadora) {
+            calcular(operadora);
+            guardarDatosActuales();
+        }
 
         function calcular(operadora) {
             const recs = parseFloat(document.getElementById(`${operadora}_recs`).value) || 0;
@@ -304,7 +309,30 @@
             return parseFloat(str.replace(/[$,\s]/g, '')) || 0;
         }
 
-        function guardarDatos() {
+        function guardarDatosActuales() {
+            datosActualesMemoria = {
+                tigo: {
+                    recs: document.getElementById('tigo_recs').value,
+                    tel_dolares: document.getElementById('tigo_tel_dolares').value
+                },
+                claro: {
+                    recs: document.getElementById('claro_recs').value,
+                    tel_dolares: document.getElementById('claro_tel_dolares').value
+                },
+                movistar: {
+                    recs: document.getElementById('movistar_recs').value,
+                    tel_dolares: document.getElementById('movistar_tel_dolares').value
+                },
+                digicel: {
+                    recs: document.getElementById('digicel_recs').value,
+                    tel_dolares: document.getElementById('digicel_tel_dolares').value
+                }
+            };
+            
+            window.datosActuales = JSON.stringify(datosActualesMemoria);
+        }
+
+        function guardarEnHistorial() {
             const datos = {
                 fecha: new Date().toLocaleString('es-ES'),
                 tigo: {
@@ -325,12 +353,6 @@
                 }
             };
 
-            // Guardar datos actuales
-            const datosGuardados = JSON.stringify(datos);
-            const datosArray = [];
-            datosArray.push(datosGuardados);
-            window.datosActuales = datosGuardados;
-
             // Agregar al historial
             historial.unshift(datos);
             if (historial.length > 20) {
@@ -339,7 +361,7 @@
             window.historialGlobal = JSON.stringify(historial);
 
             mostrarHistorial();
-            alert('✅ Datos guardados correctamente');
+            alert('✅ Registro guardado en el historial');
         }
 
         function limpiarDatos() {
@@ -350,20 +372,33 @@
                     document.getElementById(`${op}_tel_dolares`).value = '';
                     calcular(op);
                 });
+                
+                // Limpiar datos guardados
+                datosActualesMemoria = {};
+                window.datosActuales = JSON.stringify(datosActualesMemoria);
             }
         }
 
-        function cargarDatosGuardados() {
+        function cargarDatosActuales() {
             if (window.datosActuales) {
-                const datos = JSON.parse(window.datosActuales);
-                cargarDatosEnFormulario(datos);
+                try {
+                    const datos = JSON.parse(window.datosActuales);
+                    datosActualesMemoria = datos;
+                    cargarDatosEnFormulario(datos);
+                } catch (e) {
+                    console.log('No hay datos previos');
+                }
             }
         }
 
         function cargarHistorial() {
             if (window.historialGlobal) {
-                historial = JSON.parse(window.historialGlobal);
-                mostrarHistorial();
+                try {
+                    historial = JSON.parse(window.historialGlobal);
+                    mostrarHistorial();
+                } catch (e) {
+                    console.log('No hay historial previo');
+                }
             }
         }
 
@@ -416,3 +451,4 @@
         }
     </script>
 </body>
+</html>
